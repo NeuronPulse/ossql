@@ -1,0 +1,7 @@
+# 构建产物
+build*/
+*.log
+cmake-build*/
+
+# AI / 编辑器内部数据（非源码）
+.codebuddy/
