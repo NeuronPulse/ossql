@@ -62,10 +62,14 @@ Output and mode flags (also settable as dot-commands inside the REPL):
 -csv  -list  -table      output mode   (list is default when piped)
 -headers on|off          toggle column headers
 -output FILE             write the result to a `snapshot` table in FILE (sqlite)
+-V, --version          show version
 ```
 
 REPL dot-commands: `.tables`, `.schema [name]`, `.mode csv|list|table`,
 `.headers on|off`, `.separator <char>`, `.help`, `.exit`/`.quit`.
+
+Shell completion: source `completions/ossql` in bash, or under zsh after
+`bashcompinit`, to complete flags and file arguments.
 
 `-output FILE` writes the result set into a `snapshot` table in a real sqlite
 database (rather than printing). Diffing two captures is then plain `sqlite3` —
@@ -233,6 +237,32 @@ SELECT hostname, printf('%.2f', load1) AS load1, nproc,
 FROM system;
 ```
 
+### `cgroup` — per-process cgroup limits
+
+Memory/pid limits and usage for a process, from `/sys/fs/cgroup` (cgroup v2
+unified hierarchy, with a v1 fallback). `pid = ?` is pushed down; without it,
+every process is scanned (slow), so scope it. `memory_max`/`pids_max` are
+`NULL` when the cgroup has no limit (`max`).
+
+| column | type | notes |
+|---|---|---|
+| pid | INTEGER | pushdown: `pid = ?` |
+| cgroup | TEXT | cgroup path |
+| memory_max | INTEGER | memory limit, bytes (NULL = unlimited) |
+| memory_current | INTEGER | memory usage, bytes |
+| pids_max | INTEGER | task limit (NULL = unlimited) |
+| pids_current | INTEGER | task count |
+
+Processes closest to their memory cap:
+
+```sql
+SELECT c.pid, pr.comm,
+       printf('%.1f', c.memory_current*100.0/c.memory_max)||'%' AS used
+FROM cgroup c JOIN proc pr ON pr.pid = c.pid
+WHERE c.memory_max IS NOT NULL
+ORDER BY c.memory_current*1.0/c.memory_max DESC LIMIT 5;
+```
+
 ### `fd` — `/proc/<pid>/fd`
 
 Open file descriptors per process (an `lsof` replacement). `pid = ?` is pushed
@@ -390,10 +420,11 @@ WHERE s.name = 'ossql' AND d.type = 'file';
 ## Roadmap
 
 Implemented (each a read-only virtual table or helper, reusing the same
-machinery): `system`, `passwd`, `group`, `mounts`, `net` (incl. Unix-domain
-sockets), `fd`, `env`, the `file_grep` function, `proc` I/O + rlimit columns
-(`io_read`/`io_write`/`rlimit_nofile`), `fs` disk-usage columns
-(`blocks`/`blksize`/`dev`), and `-output` snapshot capture.
+machinery): `system`, `cgroup`, `passwd`, `group`, `mounts`, `net` (incl.
+Unix-domain sockets), `fd`, `env`, the `file_grep` function, `proc` I/O +
+rlimit columns (`io_read`/`io_write`/`rlimit_nofile`), `fs` disk-usage columns
+(`blocks`/`blksize`/`dev`), `-output` snapshot capture, `--version`, and bash/zsh
+completion. CI runs the smoke tests under AddressSanitizer on every push.
 
 Possible future, kept small and in-spirit:
 
