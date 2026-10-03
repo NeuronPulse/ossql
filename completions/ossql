@@ -1,0 +1,16 @@
+# ossql shell completion (bash). For zsh, source this after `bashcompinit`:
+#   autoload -U bashcompinit && bashcompinit && source /path/to/ossql
+_ossql() {
+    local cur
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    local opts="-csv -list -table -headers -output -o -V --version -h --help"
+    if [[ "${cur}" == -* ]]; then
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+    fi
+    # Default: complete file paths (e.g. an -output FILE argument).
+    COMPREPLY=( $(compgen -f -- "${cur}") )
+    return 0
+}
+complete -F _ossql ossql
