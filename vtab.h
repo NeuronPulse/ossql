@@ -392,6 +392,7 @@ bool readFileText(const std::string& path, std::string& out, size_t maxBytes);
 void registerFs(sqlite3* db);
 void registerProc(sqlite3* db);
 void registerSystem(sqlite3* db);
+void registerCgroup(sqlite3* db);
 void registerPasswd(sqlite3* db);
 void registerGroup(sqlite3* db);
 void registerMounts(sqlite3* db);

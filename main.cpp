@@ -262,6 +262,10 @@ int main(int argc, char** argv) {
         else if (a == "-output" || a == "-o") {
             outFile = (i + 1 < argc) ? std::string(argv[++i]) : std::string();
         }
+        else if (a == "-V" || a == "--version") {
+            std::cout << "ossql 0.1.0\n";
+            return 0;
+        }
         else if (a == "-h" || a == "--help") {
             std::cout << "ossql - query OS state with SQL\n"
                       << "usage:\n"
@@ -269,7 +273,8 @@ int main(int argc, char** argv) {
                       << "  ossql                  interactive REPL\n"
                       << "  -csv -list -table      output mode (list is default when piped)\n"
                       << "  -headers on|off        toggle column headers\n"
-                      << "  -output FILE           write result to a `snapshot` table in FILE (sqlite)\n";
+                      << "  -output FILE           write result to a `snapshot` table in FILE (sqlite)\n"
+                      << "  -V, --version          show version\n";
             return 0;
         }
         else if (!sql.empty()) { sql += "\n"; sql += a; }
@@ -284,6 +289,7 @@ int main(int argc, char** argv) {
     registerFs(db);
     registerProc(db);
     registerSystem(db);
+    registerCgroup(db);
     registerPasswd(db);
     registerGroup(db);
     registerMounts(db);

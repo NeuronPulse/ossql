@@ -40,6 +40,13 @@ ok_int_gt "passwd resolvable"           "SELECT count(*) FROM passwd"           
 ok_int_gt "net has rows"                "SELECT count(*) FROM net"                          0
 ok_int_gt "net has unix sockets"        "SELECT count(*) FROM net WHERE proto='unix'"       0
 
+# cgroup: query must succeed; rows may be 0 if cgroup is unmounted.
+if run -headers off "SELECT count(*) FROM cgroup LIMIT 1" >/dev/null 2>&1; then
+  echo "ok: cgroup queryable"
+else
+  echo "FAIL(exit): cgroup queryable"; fail=1
+fi
+
 # -output snapshot round-trips into a real sqlite file if sqlite3 is available.
 tmp=$(mktemp /tmp/ossql_snap.XXXXXX.db)
 if command -v sqlite3 >/dev/null 2>&1; then

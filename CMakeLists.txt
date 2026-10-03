@@ -14,6 +14,7 @@ add_executable(ossql
   fs_table.cpp
   proc_table.cpp
   system_table.cpp
+  cgroup_table.cpp
   snap.cpp
   functions.cpp
   passwd_table.cpp
